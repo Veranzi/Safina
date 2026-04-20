@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ref, push, onValue } from 'firebase/database'
-import { blogDB } from '@/lib/firebase'
+import { getBlogDB } from '@/lib/firebase'
 import { BlogPost, BlogComment } from '@/types'
 
 const posts: BlogPost[] = [
@@ -16,7 +16,7 @@ function BlogComments({ blogId }: { blogId: string }) {
   const [text, setText] = useState('')
 
   useEffect(() => {
-    const commentsRef = ref(blogDB, `blog/${blogId}`)
+    const commentsRef = ref(getBlogDB(), `blog/${blogId}`)
     const unsubscribe = onValue(commentsRef, (snapshot) => {
       const data = snapshot.val()
       if (data) {
@@ -31,7 +31,7 @@ function BlogComments({ blogId }: { blogId: string }) {
   const submitComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!text.trim()) return
-    await push(ref(blogDB, `blog/${blogId}`), { text, timestamp: new Date().toISOString() })
+    await push(ref(getBlogDB(), `blog/${blogId}`), { text, timestamp: new Date().toISOString() })
     setText('')
   }
 

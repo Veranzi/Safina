@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ref, push } from 'firebase/database'
-import { contactDB } from '@/lib/firebase'
+import { getContactDB } from '@/lib/firebase'
 import { ContactFormData } from '@/types'
 
 export default function ContactSection() {
@@ -12,7 +12,7 @@ export default function ContactSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await push(ref(contactDB, 'contact'), form)
+      await push(ref(getContactDB(), 'contact'), form)
       setStatus('success')
       setForm({ name: '', email: '', subject: '', message: '' })
       setTimeout(() => setStatus('idle'), 4000)

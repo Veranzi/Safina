@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ref, push } from 'firebase/database'
-import { volunteerDB } from '@/lib/firebase'
+import { getVolunteerDB } from '@/lib/firebase'
 import { VolunteerFormData } from '@/types'
 
 export default function VolunteerSection() {
@@ -12,7 +12,7 @@ export default function VolunteerSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await push(ref(volunteerDB, 'volunteer'), form)
+      await push(ref(getVolunteerDB(), 'volunteer'), form)
       setStatus('success')
       setForm({ name: '', email: '', message: '' })
       setTimeout(() => setStatus('idle'), 4000)
