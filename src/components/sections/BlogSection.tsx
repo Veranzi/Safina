@@ -16,23 +16,28 @@ function BlogComments({ blogId }: { blogId: string }) {
   const [text, setText] = useState('')
 
   useEffect(() => {
-    const commentsRef = ref(getBlogDB(), `blog/${blogId}`)
-    const unsubscribe = onValue(commentsRef, (snapshot) => {
-      const data = snapshot.val()
-      if (data) {
-        setComments(Object.values(data) as BlogComment[])
-      } else {
-        setComments([])
-      }
-    })
-    return () => unsubscribe()
+    let unsubscribe: (() => void) | undefined
+    try {
+      const commentsRef = ref(getBlogDB(), `blog/${blogId}`)
+      unsubscribe = onValue(commentsRef, (snapshot) => {
+        const data = snapshot.val()
+        setComments(data ? (Object.values(data) as BlogComment[]) : [])
+      })
+    } catch {
+      // Firebase not configured — comments unavailable
+    }
+    return () => unsubscribe?.()
   }, [blogId])
 
   const submitComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!text.trim()) return
-    await push(ref(getBlogDB(), `blog/${blogId}`), { text, timestamp: new Date().toISOString() })
-    setText('')
+    try {
+      await push(ref(getBlogDB(), `blog/${blogId}`), { text, timestamp: new Date().toISOString() })
+      setText('')
+    } catch {
+      // Firebase not configured
+    }
   }
 
   return (
