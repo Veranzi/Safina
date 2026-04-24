@@ -1,7 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { NextRequest, NextResponse } from 'next/server'
-
-const client = new Anthropic()
 
 const SYSTEM_PROMPT = `You are a helpful assistant for the Jerusalem Church of Christ (JCC), also known as SAFINA — Where healing, compassion, and transformation meet.
 
@@ -28,23 +26,29 @@ export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json()
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Chat service not configured' }, { status: 503 })
     }
 
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages,
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: SYSTEM_PROMPT,
     })
 
-    const content = response.content[0]
-    if (content.type !== 'text') {
-      return NextResponse.json({ error: 'Unexpected response type' }, { status: 500 })
-    }
+    // Convert messages to Gemini format
+    const history = messages.slice(0, -1).map((m: { role: string; content: string }) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }))
 
-    return NextResponse.json({ reply: content.text })
+    const lastMessage = messages[messages.length - 1]
+
+    const chat = model.startChat({ history })
+    const result = await chat.sendMessage(lastMessage.content)
+    const reply = result.response.text()
+
+    return NextResponse.json({ reply })
   } catch (error) {
     console.error('Chat API error:', error)
     return NextResponse.json({ error: 'Failed to get response' }, { status: 500 })
