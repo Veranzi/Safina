@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Loader from '@/components/ui/Loader'
 import BackToTop from '@/components/ui/BackToTop'
+import ChatWidget from '@/components/ui/ChatWidget'
 
 export const metadata: Metadata = {
   title: 'Jerusalem Church of Christ 56',
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Footer />
         <BackToTop />
+        <ChatWidget />
       </body>
     </html>
   )
